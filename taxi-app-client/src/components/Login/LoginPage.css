@@ -1,0 +1,71 @@
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.login-box {
+  background: rgba(3, 7, 94, 0.8); /* Tamno plava boja sa providnošću */
+  padding: 30px; /* Veće padding */
+  border-radius: 15px; /* Veći zaobljenost */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Dublja senka */
+  width: 400px; /* Širina prozora */
+  text-align: center;
+  color: white; /* Boja teksta postavljena na belu za bolji kontrast */
+}
+
+.login-box h2 {
+  margin-bottom: 20px;
+  font-size: 24px; /* Veći font za naslov */
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+  text-align: center; /* Centriranje teksta labela */
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.9
+  ); /* Bijela pozadina za input polja */
+  color: #000; /* Crna boja teksta unutar input polja */
+  text-align: center; /* Centriranje teksta unutar input polja */
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff; /* Plava boja za dugmadi */
+  color: white; /* Boja teksta na dugmadima */
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px; /* Razmak između dugmadi */
+}
+
+button:hover {
+  background-color: #0056b3; /* Tamnija plava prilikom hovera */
+}
+
+button[type="button"] {
+  background-color: #6c757d; /* Siva boja za dugme "Kreiraj nalog" */
+}
+
+button[type="button"]:hover {
+  background-color: #5a6268; /* Tamnija siva prilikom hovera */
+}

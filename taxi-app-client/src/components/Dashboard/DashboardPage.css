@@ -1,0 +1,139 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: url("src/assets/images/background-taxi-app.png") no-repeat center
+    center fixed;
+  background-size: cover;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.dashboard-header {
+  margin-top: 10px;
+  width: 72%;
+  background: rgba(38, 46, 197, 0.4);
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  z-index: 1000;
+  box-sizing: border-box;
+  border-radius: 15px;
+}
+
+.dashboard-header .logo h2 {
+  margin: 0;
+  color: yellow;
+}
+
+.dashboard-menu {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centering the menu horizontally */
+}
+.dashboard-menu li {
+  margin-left: 20px;
+}
+
+.profile-dropdown {
+  position: relative;
+}
+
+.profile-dropdown .dropdown-content {
+  display: none;
+  position: absolute;
+  top: calc(100% + 20px);
+  left: 0;
+  background-color: rgba(38, 39, 49, 0.8);
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  border: solid 1px;
+}
+
+.profile-dropdown .dropdown-content.show {
+  display: block;
+}
+
+.profile-dropdown .dropdown-content button {
+  display: block;
+  width: 100%;
+  padding: 10px 20px;
+  text-align: left;
+  color: white;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.profile-dropdown .dropdown-content button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-menu button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease;
+}
+
+.dashboard-menu button:hover,
+.dashboard-menu .active {
+  background-color: red;
+}
+
+.auth-buttons {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+}
+
+.auth-buttons button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease;
+}
+
+.auth-buttons button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.dashboard-content {
+  margin-top: 80px; /* To prevent content overlap with fixed menu */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 1300px;
+  height: 680px;
+  background: rgba(38, 46, 197, 0.4);
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  overflow: auto; /* Added for better content handling */
+  padding: 40px;
+}
