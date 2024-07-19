@@ -12,7 +12,10 @@
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.25.0"
+    "react-router-dom": "^6.25.0",
+    "axios": "^0.27.2",
+    "dotenv": "^16.4.5",
+    "jwt-decode": "^4.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
