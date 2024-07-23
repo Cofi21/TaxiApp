@@ -1,12 +1,16 @@
 ﻿using Common.Enums;
 using Common.Helpers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration.UserSecrets;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 using UserService.Database;
 using UserService.Models;
 
@@ -19,6 +23,7 @@ namespace UserService.Controllers
         private readonly UserDbContext _userDbContext;
         private readonly IConfiguration _configuration;
         private readonly string _imagesFolderPath = @"C:\Users\bogda\Documents\GitHub\TaxiApp\TaxiWebApp\Images";
+
         public AuthController(UserDbContext userDbContext, IConfiguration configuration)
         {
             _userDbContext = userDbContext;
@@ -32,7 +37,6 @@ namespace UserService.Controllers
             string imageName = $"{userId}{extension}";
             var imagePath = Path.Combine(_imagesFolderPath, imageName);
 
-            // Ako slika već postoji, obriši je
             if (System.IO.File.Exists(imagePath))
             {
                 System.IO.File.Delete(imagePath);
@@ -42,6 +46,7 @@ namespace UserService.Controllers
             {
                 await imageFile.CopyToAsync(fileStream);
             }
+
             return imageName;
         }
 
@@ -99,12 +104,7 @@ namespace UserService.Controllers
                 user.UserType = UserType.User;
             }
 
-            if (user.UserType == UserType.User)
-            {
-                user.UserState = UserState.Verified;
-            }
-
-            if (user.UserType == UserType.Admin)
+            if (user.UserType == UserType.User || user.UserType == UserType.Admin)
             {
                 user.UserState = UserState.Verified;
             }
@@ -114,19 +114,25 @@ namespace UserService.Controllers
             _userDbContext.Users.Add(user);
             _userDbContext.SaveChanges();
 
-            // Save image with the user ID as the filename
             var image = await SaveImage(registerDto.ImageFile, user.Id.ToString());
             user.ImageName = image;
 
             _userDbContext.Users.Update(user);
             _userDbContext.SaveChanges();
 
-
-
             var token = GenerateJwtToken(user);
 
-            return Ok("Registration successful");
+            return Ok(new { token });
         }
+
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            // JWT is stateless, so to "logout" we just instruct the client to delete the token
+            return Ok(new { message = "Logout successful" });
+        }
+
+       
 
         private string GenerateJwtToken(User user)
         {

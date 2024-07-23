@@ -16,7 +16,7 @@ const LoginPage: React.FC = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: email, // Promijenjeno iz 'username' u 'email'
+          email: email, 
           password: password,
         }),
       });
@@ -26,13 +26,10 @@ const LoginPage: React.FC = () => {
       }
 
       const data = await response.json();
-      // Handle successful login, e.g., store the token, redirect, etc.
-      console.log("Login successful:", data);
-      // Example: navigate to the dashboard
+      localStorage.setItem("token", data.token);
       navigate("/");
     } catch (error) {
       console.error("Error logging in:", error);
-      // Optionally, display an error message to the user
     }
   };
 

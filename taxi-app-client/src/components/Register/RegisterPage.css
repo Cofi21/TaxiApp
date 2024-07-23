@@ -4,10 +4,11 @@
   align-items: center;
   width: 100%;
   height: 100%;
+  margin: 50px;
 }
 
 .register-box {
-  background: rgba(3, 7, 94, 0.8); /* Tamno plava boja sa providnošću */
+  background: rgba(3, 7, 94, 0.8) fixed; /* Tamno plava boja sa providnošću */
   padding: 40px; /* Veće padding */
   border-radius: 15px; /* Veći zaobljenost */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Dublja senka */

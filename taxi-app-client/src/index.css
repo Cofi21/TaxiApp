@@ -33,6 +33,8 @@ body {
     center fixed;
   background-size: cover;
   justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 h1 {

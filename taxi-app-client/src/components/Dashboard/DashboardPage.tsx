@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./DashboardPage.css";
 import Profile from "../Profile/Profile";
@@ -8,25 +8,121 @@ import Verification from "../Verification/Verification";
 import NewRides from "../NewRides/NewRides";
 import MyRides from "../MyRides/MyRides";
 import AllRides from "../AllRides/AllRides";
+import EditProfile from "../EditProfile/EditProfile"; // Importuj EditProfile
+
+enum UserRole {
+  Admin = 0,
+  Driver = 1,
+  User = 2,
+}
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const [userRole, setUserRole] = useState<"Admin" | "Korisnik" | "Vozač">(
-    "Korisnik"
-  );
+  const [userRole, setUserRole] = useState<UserRole>(UserRole.User);
   const [activeTab, setActiveTab] = useState<string>("Profile");
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] =
     useState<boolean>(false);
+  const [userName, setUserName] = useState<string>("");
+  const [userImage, setUserImage] = useState<string>("");
+  const [showEditProfilePage, setShowEditProfilePage] =
+    useState<boolean>(false);
 
-  const handleLogout = () => {
-    navigate("/login");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://localhost:8152/api/User/me", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Failed to fetch user data:", errorText);
+          throw new Error("Failed to fetch user data");
+        }
+
+        const data = await response.json();
+        setUserName(`${data.firstName} ${data.lastName}`);
+        setUserRole(data.userType);
+
+        const imageUrl = `http://localhost:8152/api/User/get-image/${data.imageName}`;
+        setUserImage(imageUrl);
+        console.log(imageUrl);
+      } catch (error) {
+        console.error("Failed to fetch user data", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        await fetch("http://localhost:8152/api/Auth/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+
+      localStorage.removeItem("token");
+      navigate("/login");
+    } catch (error) {
+      console.error("Failed to logout", error);
+    }
   };
 
   const toggleProfileDropdown = () => {
     setIsProfileDropdownOpen((prevState) => !prevState);
   };
 
+  const showEditProfile = () => {
+    setShowEditProfilePage(true);
+    setIsProfileDropdownOpen(false); // Close dropdown when EditProfile is clicked
+  };
+
+  const handleMenuClick = (tab: string) => {
+    if (tab === "Edit Profile") {
+      setShowEditProfilePage(true);
+    } else {
+      setActiveTab(tab);
+      setShowEditProfilePage(false); // Hide EditProfile when switching tabs
+    }
+    setIsProfileDropdownOpen(false); // Close dropdown menu on any menu click
+  };
+
   const renderContent = () => {
+    if (showEditProfilePage) {
+      return <EditProfile />;
+    }
+
     switch (activeTab) {
       case "Profile":
         return <Profile />;
@@ -52,80 +148,73 @@ const DashboardPage: React.FC = () => {
       <div className="dashboard-header">
         <ul className="dashboard-menu">
           <li>
-            <div className="profile-dropdown">
-              <button
-                className={activeTab === "Profile" ? "active" : ""}
-                onClick={toggleProfileDropdown}
-              >
-                Profile
-              </button>
+            <div className="profile-dropdown" ref={dropdownRef}>
+              <div className="profile-info">
+                <img
+                  src={userImage}
+                  alt="User"
+                  className="profile-image"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "http://localhost:8152/api/User/get-image/default-profile.png";
+                  }}
+                />
+                <button
+                  className="profile-button"
+                  onClick={toggleProfileDropdown}
+                >
+                  {userName}
+                </button>
+              </div>
               <div
                 className={`dropdown-content ${
                   isProfileDropdownOpen ? "show" : ""
                 }`}
               >
                 <button onClick={handleLogout}>Logout</button>
-                <button onClick={() => setActiveTab("Profile")}>
+                <button onClick={() => handleMenuClick("Edit Profile")}>
                   Edit Profile
                 </button>
               </div>
             </div>
           </li>
-          {userRole === "Korisnik" && (
+          {userRole === UserRole.User && (
             <>
               <li>
-                <button
-                  className={activeTab === "New Ride" ? "active" : ""}
-                  onClick={() => setActiveTab("New Ride")}
-                >
+                <button onClick={() => handleMenuClick("New Ride")}>
                   New Ride
                 </button>
               </li>
               <li>
-                <button
-                  className={activeTab === "Previous Rides" ? "active" : ""}
-                  onClick={() => setActiveTab("Previous Rides")}
-                >
+                <button onClick={() => handleMenuClick("Previous Rides")}>
                   Previous Rides
                 </button>
               </li>
             </>
           )}
-          {userRole === "Admin" && (
+          {userRole === UserRole.Admin && (
             <>
               <li>
-                <button
-                  className={activeTab === "Verification" ? "active" : ""}
-                  onClick={() => setActiveTab("Verification")}
-                >
+                <button onClick={() => handleMenuClick("Verification")}>
                   Verification
                 </button>
               </li>
               <li>
-                <button
-                  className={activeTab === "All Rides" ? "active" : ""}
-                  onClick={() => setActiveTab("All Rides")}
-                >
+                <button onClick={() => handleMenuClick("All Rides")}>
                   All Rides
                 </button>
               </li>
             </>
           )}
-          {userRole === "Vozač" && (
+          {userRole === UserRole.Driver && (
             <>
               <li>
-                <button
-                  className={activeTab === "New Rides" ? "active" : ""}
-                  onClick={() => setActiveTab("New Rides")}
-                >
+                <button onClick={() => handleMenuClick("New Rides")}>
                   New Rides
                 </button>
               </li>
               <li>
-                <button
-                  className={activeTab === "My Rides" ? "active" : ""}
-                  onClick={() => setActiveTab("My Rides")}
-                >
+                <button onClick={() => handleMenuClick("My Rides")}>
                   My Rides
                 </button>
               </li>

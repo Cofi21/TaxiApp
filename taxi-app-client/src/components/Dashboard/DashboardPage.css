@@ -1,24 +1,26 @@
-body {
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  background: url("src/assets/images/background-taxi-app.png") no-repeat center
-    center fixed;
-  background-size: cover;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .dashboard-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
   box-sizing: border-box;
+  margin: 30px;
 }
 
+.dashboard-content {
+  margin-top: 80px; /* To prevent content overlap with fixed menu */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 1300px;
+  height: 680px;
+  background: rgba(38, 46, 197, 0.4);
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  overflow: auto; /* Added for better content handling */
+  padding: 40px;
+  position: fixed;
+}
 .dashboard-header {
   margin-top: 10px;
   width: 72%;
@@ -124,16 +126,20 @@ body {
   background-color: rgba(255, 255, 255, 0.3);
 }
 
-.dashboard-content {
-  margin-top: 80px; /* To prevent content overlap with fixed menu */
+.user-info {
+  margin-right: 20px;
+  font-size: 1.2em;
+  color: #333;
+}
+.profile-info {
   display: flex;
-  justify-content: center;
   align-items: center;
-  width: 1300px;
-  height: 680px;
-  background: rgba(38, 46, 197, 0.4);
-  border-radius: 15px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  overflow: auto; /* Added for better content handling */
-  padding: 40px;
+}
+
+.profile-image {
+  width: 60px; /* Prilagodite veličinu slike */
+  height: 60px;
+  border-radius: 50%; /* Zaokružena slika */
+  margin-right: 10px; /* Razmak između slike i imena */
+  object-fit: cover; /* Prilagodite sliku tako da ne bude deformisana */
 }

@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./RegisterPage.css";
+import "./EditProfile.css";
 
-const RegisterPage: React.FC = () => {
-  const navigate = useNavigate();
+const EditProfile: React.FC = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,10 +11,33 @@ const RegisterPage: React.FC = () => {
   const [lastName, setLastName] = useState("");
   const [dob, setDob] = useState("");
   const [address, setAddress] = useState("");
-  const [userType, setUserType] = useState("User");
+  const [userType, setUserType] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const navigate = useNavigate();
 
-  const handleRegister = async (event: React.FormEvent) => {
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch("http://localhost:8152/api/User/me");
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+        const data = await response.json();
+        setUsername(data.username);
+        setEmail(data.email);
+        setFirstName(data.firstName);
+        setLastName(data.lastName);
+        setDob(data.dateOfBirth.split("T")[0]); // Format date as yyyy-mm-dd
+        setAddress(data.address);
+        setUserType(data.userType);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchUserData();
+  }, []);
+
+  const handleSave = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (password !== passwordConfirm) {
@@ -38,32 +60,33 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8152/api/Auth/register", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "http://localhost:8152/api/User/edit-profile",
+        {
+          method: "PUT",
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Registration failed:", errorText);
-        alert("Registration failed");
+        console.error("Update failed:", errorText);
+        alert("Update failed");
         return;
       }
 
-      const data = await response.json();
-      localStorage.setItem("token", data.token);
-      navigate("/");
+      alert("Profile updated successfully");
     } catch (error) {
-      console.error("Registration error", error);
-      alert("Registration error");
+      console.error("Update error", error);
+      alert("Update error");
     }
   };
 
   return (
-    <div className="register-page">
-      <div className="register-box">
-        <form onSubmit={handleRegister}>
-          <h2>Register</h2>
+    <div className="edit-profile-page">
+      <div className="edit-profile-box">
+        <h2>Edit Profile</h2>
+        <form onSubmit={handleSave}>
           <div className="input-group">
             <label htmlFor="username">Username</label>
             <input
@@ -71,18 +94,11 @@ const RegisterPage: React.FC = () => {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required
             />
           </div>
           <div className="input-group">
             <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <input type="email" id="email" value={email} readOnly />
           </div>
           <div className="input-group">
             <label htmlFor="password">Password</label>
@@ -91,7 +107,6 @@ const RegisterPage: React.FC = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
             />
           </div>
           <div className="input-group">
@@ -101,7 +116,6 @@ const RegisterPage: React.FC = () => {
               id="passwordConfirm"
               value={passwordConfirm}
               onChange={(e) => setPasswordConfirm(e.target.value)}
-              required
             />
           </div>
           <div className="input-group">
@@ -111,7 +125,6 @@ const RegisterPage: React.FC = () => {
               id="firstName"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              required
             />
           </div>
           <div className="input-group">
@@ -121,7 +134,6 @@ const RegisterPage: React.FC = () => {
               id="lastName"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              required
             />
           </div>
           <div className="input-group">
@@ -131,7 +143,6 @@ const RegisterPage: React.FC = () => {
               id="dob"
               value={dob}
               onChange={(e) => setDob(e.target.value)}
-              required
             />
           </div>
           <div className="input-group">
@@ -141,20 +152,11 @@ const RegisterPage: React.FC = () => {
               id="address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              required
             />
           </div>
           <div className="input-group">
             <label htmlFor="userType">User Type</label>
-            <select
-              id="userType"
-              value={userType}
-              onChange={(e) => setUserType(e.target.value)}
-              required
-            >
-              <option value="User">User</option>
-              <option value="Driver">Driver</option>
-            </select>
+            <input type="text" id="userType" value={userType} readOnly />
           </div>
           <div className="input-group">
             <label htmlFor="profilePicture">Profile Picture</label>
@@ -167,17 +169,13 @@ const RegisterPage: React.FC = () => {
                   setImageFile(e.target.files[0]);
                 }
               }}
-              required
             />
           </div>
-          <button type="submit">Register</button>
-          <button type="button" onClick={() => navigate("/login")}>
-            Already have an account? Log in
-          </button>
+          <button type="submit">Save Changes</button>
         </form>
       </div>
     </div>
   );
 };
 
-export default RegisterPage;
+export default EditProfile;

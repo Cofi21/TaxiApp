@@ -1,16 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Fabric;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
-using Microsoft.ServiceFabric.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using UserService.Database;
@@ -82,8 +73,10 @@ namespace UserService
                             {
                                 ValidateIssuerSigningKey = true,
                                 IssuerSigningKey = new SymmetricSecurityKey(key),
-                                ValidateIssuer = false,
-                                ValidateAudience = false
+                                ValidateIssuer = true,
+                                ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                                ValidateAudience = true,
+                                ValidAudience = builder.Configuration["Jwt:Audience"]
                             };
                         });
 
@@ -94,6 +87,7 @@ namespace UserService
                         app.UseSwaggerUI();
                         }
                         app.UseAuthorization();
+                        app.UseAuthentication();
                         app.MapControllers();
 
                         app.UseCors("AllowSpecificOrigin");
