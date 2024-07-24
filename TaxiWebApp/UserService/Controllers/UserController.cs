@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Common.Helpers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,15 +14,15 @@ namespace UserService.Controllers
     public class UserController : ControllerBase
     {
         
-        private readonly string _imageFolderPath = @"C:\Users\bogda\Documents\GitHub\TaxiApp\TaxiWebApp\Images";
+        private readonly string _imagesFolderPath = @"C:\Users\bogda\Documents\GitHub\TaxiApp\TaxiWebApp\Images";
 
         private readonly UserDbContext dbContext;
 
         public UserController(UserDbContext userDbContext)
         {
-             if (!Directory.Exists(_imageFolderPath))
+             if (!Directory.Exists(_imagesFolderPath))
               {
-                Directory.CreateDirectory(_imageFolderPath);
+                Directory.CreateDirectory(_imagesFolderPath);
               }
             dbContext = userDbContext;
 
@@ -35,7 +36,7 @@ namespace UserService.Controllers
                 return BadRequest("No file uploaded.");
             }
 
-            var filePath = Path.Combine(_imageFolderPath, file.FileName);
+            var filePath = Path.Combine(_imagesFolderPath, file.FileName);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
@@ -44,6 +45,38 @@ namespace UserService.Controllers
 
             return Ok(new { FilePath = filePath });
         }
+        [NonAction]
+        public async Task<string> SaveImage(IFormFile imageFile, string userId, string currentImageName)
+        {
+            string extension = Path.GetExtension(imageFile.FileName);
+            string imageName = $"{userId}{extension}";
+            var imagePath = Path.Combine(_imagesFolderPath, imageName);
+
+            var existingFiles = Directory.GetFiles(_imagesFolderPath, $"{userId}.*");
+            foreach (var file in existingFiles)
+            {
+                if (Path.GetFileName(file) != imageName)
+                {
+                    try
+                    {
+                        System.IO.File.Delete(file);
+                        Console.WriteLine($"Existing image {file} deleted successfully.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error deleting image {file}: {ex.Message}");
+                    }
+                }
+            }
+
+            using (var fileStream = new FileStream(imagePath, FileMode.Create))
+            {
+                await imageFile.CopyToAsync(fileStream);
+            }
+            return imageName;
+        }
+
+
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers()
         {
@@ -86,7 +119,7 @@ namespace UserService.Controllers
         [HttpGet("get-image/{imageName}")]
         public IActionResult GetImage(string imageName)
         {
-            var imageFile = Directory.EnumerateFiles(_imageFolderPath, imageName + ".*").FirstOrDefault();
+            var imageFile = Directory.EnumerateFiles(_imagesFolderPath, imageName + ".*").FirstOrDefault();
 
             if (imageFile == null)
             {
@@ -113,7 +146,7 @@ namespace UserService.Controllers
             return File(image, mimeType);
         }
         [HttpPut("edit-profile")]
-        public async Task<IActionResult> EditProfile([FromForm] RegisterUser registerDto, [FromForm] IFormFile imageFile)
+        public async Task<IActionResult> EditProfile([FromForm] RegisterUser registerDto)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);
             if (email == null)
@@ -132,12 +165,13 @@ namespace UserService.Controllers
             existingUser.LastName = registerDto.LastName;
             existingUser.DateOfBirth = registerDto.DateOfBirth;
             existingUser.Address = registerDto.Address;
+            existingUser.Username = registerDto.Username;
 
             // Handle password update
             if (!string.IsNullOrEmpty(registerDto.Password) && registerDto.Password == registerDto.ConfirmPassword)
             {
-                var passwordHasher = new PasswordHasher<User>();
-                existingUser.PasswordHash = passwordHasher.HashPassword(existingUser, registerDto.Password);
+                existingUser.PasswordHash = HashHelper.HashPassword(registerDto.Password);
+                   
             }
             else if (!string.IsNullOrEmpty(registerDto.Password) || !string.IsNullOrEmpty(registerDto.ConfirmPassword))
             {
@@ -145,14 +179,10 @@ namespace UserService.Controllers
             }
 
             // Handle image file
-            if (imageFile != null)
+            if (registerDto.ImageFile != null)
             {
-                var filePath = _imageFolderPath;
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await imageFile.CopyToAsync(stream);
-                }
-                existingUser.ImageName = imageFile.FileName;
+                var image = await SaveImage(registerDto.ImageFile, existingUser.Id.ToString(), existingUser.ImageName);
+                existingUser.ImageName = image;
             }
 
             dbContext.Users.Update(existingUser);
@@ -160,6 +190,7 @@ namespace UserService.Controllers
 
             return Ok(new { message = "Profile updated successfully" });
         }
+
 
 
     }

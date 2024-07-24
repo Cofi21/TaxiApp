@@ -8,7 +8,7 @@ import Verification from "../Verification/Verification";
 import NewRides from "../NewRides/NewRides";
 import MyRides from "../MyRides/MyRides";
 import AllRides from "../AllRides/AllRides";
-import EditProfile from "../EditProfile/EditProfile"; // Importuj EditProfile
+import EditProfile from "../EditProfile/EditProfile";
 
 enum UserRole {
   Admin = 0,
@@ -26,6 +26,7 @@ const DashboardPage: React.FC = () => {
   const [userImage, setUserImage] = useState<string>("");
   const [showEditProfilePage, setShowEditProfilePage] =
     useState<boolean>(false);
+  const [userData, setUserData] = useState<any>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -50,10 +51,10 @@ const DashboardPage: React.FC = () => {
         const data = await response.json();
         setUserName(`${data.firstName} ${data.lastName}`);
         setUserRole(data.userType);
+        setUserData(data);
 
         const imageUrl = `http://localhost:8152/api/User/get-image/${data.imageName}`;
         setUserImage(imageUrl);
-        console.log(imageUrl);
       } catch (error) {
         console.error("Failed to fetch user data", error);
       }
@@ -105,7 +106,7 @@ const DashboardPage: React.FC = () => {
 
   const showEditProfile = () => {
     setShowEditProfilePage(true);
-    setIsProfileDropdownOpen(false); // Close dropdown when EditProfile is clicked
+    setIsProfileDropdownOpen(false);
   };
 
   const handleMenuClick = (tab: string) => {
@@ -113,14 +114,14 @@ const DashboardPage: React.FC = () => {
       setShowEditProfilePage(true);
     } else {
       setActiveTab(tab);
-      setShowEditProfilePage(false); // Hide EditProfile when switching tabs
+      setShowEditProfilePage(false);
     }
-    setIsProfileDropdownOpen(false); // Close dropdown menu on any menu click
+    setIsProfileDropdownOpen(false);
   };
 
   const renderContent = () => {
     if (showEditProfilePage) {
-      return <EditProfile />;
+      return <EditProfile userData={userData} />;
     }
 
     switch (activeTab) {

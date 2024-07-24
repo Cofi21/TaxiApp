@@ -3,71 +3,82 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 100%;
-  margin: 50px 0; /* Ostaviti marginu samo vertikalno */
+  height: 80%;
+  margin: 50px 0;
 }
 
 .edit-profile-box {
-  background: rgba(3, 7, 94, 0.8); /* Tamno plava boja sa providnošću */
+  background: rgba(3, 7, 94, 0.8);
   padding: 30px;
-  border-radius: 10px; /* Manja zaobljenost */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Manja senka */
-  width: 80%; /* Postaviti širinu kao procenat */
-  max-width: 1200px; /* Maksimalna širina za veće ekrane */
-  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  width: 80%;
+  max-width: 1000px;
   color: white;
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* Dve kolone */
-  gap: 20px; /* Razmak između kolona */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 .edit-profile-box h2 {
-  grid-column: span 2; /* Naslov zauzima celu širinu */
-  margin-bottom: 20px;
-  font-size: 22px; /* Manji font za naslov */
-}
-
-.input-group {
-  margin-bottom: 15px;
-}
-
-.input-group label {
-  display: block;
-  margin-bottom: 5px;
-  text-align: left; /* Tekst labela levo poravnat */
-}
-
-.input-group input,
-.input-group select {
   width: 100%;
-  padding: 8px;
+  margin-bottom: 20px;
+  font-size: 22px;
+  text-align: center;
+}
+
+.edit-profile-box .left-column,
+.edit-profile-box .right-column {
+  display: flex;
+  flex-direction: column;
+  width: calc(40% - 20px); /* Adjusted to 50% to ensure proper spacing */
+  margin-left: 70px;
+}
+
+.edit-profile-box .input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.edit-profile-box .input-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.edit-profile-box .input-group input,
+.edit-profile-box .input-group select {
+  width: 100%;
+  padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
   background-color: rgba(255, 255, 255, 0.9);
   color: #000;
-  text-align: left; /* Tekst unutar input polja levo poravnat */
 }
 
-button {
+.edit-profile-box .input-group input[type="file"] {
+  padding: 5px;
+}
+
+.edit-profile-box .input-group.full-width {
   width: 100%;
-  padding: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.edit-profile-box button {
+  padding: 10px;
   border: none;
   border-radius: 5px;
   background-color: #007bff;
   color: white;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
-  margin-top: 10px; /* Razmak između dugmadi */
+  width: 100%;
+  max-width: 200px;
+  align-self: center;
 }
 
-button:hover {
+.edit-profile-box button:hover {
   background-color: #0056b3;
-}
-
-button[type="button"] {
-  background-color: #6c757d;
-}
-
-button[type="button"]:hover {
-  background-color: #5a6268;
 }

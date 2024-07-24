@@ -128,7 +128,6 @@ namespace UserService.Controllers
         [HttpPost("logout")]
         public IActionResult Logout()
         {
-            // JWT is stateless, so to "logout" we just instruct the client to delete the token
             return Ok(new { message = "Logout successful" });
         }
 
