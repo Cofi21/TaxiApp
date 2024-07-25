@@ -15,8 +15,18 @@ enum UserRole {
   Driver = 1,
   User = 2,
 }
+enum DriverStatus {
+  RequestCreated = 0,
+  RequestApproved = 1,
+  RequestRejected = 2,
+  NoStatus = 3,
+}
 
-const DashboardPage: React.FC = () => {
+interface DashboardPageProps {
+  setIsLoggedIn: (isLoggedIn: boolean) => void;
+}
+
+const DashboardPage: React.FC<DashboardPageProps> = ({ setIsLoggedIn }) => {
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<UserRole>(UserRole.User);
   const [activeTab, setActiveTab] = useState<string>("Profile");
@@ -27,13 +37,20 @@ const DashboardPage: React.FC = () => {
   const [showEditProfilePage, setShowEditProfilePage] =
     useState<boolean>(false);
   const [userData, setUserData] = useState<any>(null);
-
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [driverStatus, setDriverStatus] = useState<DriverStatus>(
+    DriverStatus.NoStatus
+  );
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
         const response = await fetch("http://localhost:8152/api/User/me", {
           method: "GET",
           headers: {
@@ -55,13 +72,20 @@ const DashboardPage: React.FC = () => {
 
         const imageUrl = `http://localhost:8152/api/User/get-image/${data.imageName}`;
         setUserImage(imageUrl);
+        console.log("data " + data.userState);
+
+        if (data.userType === UserRole.Driver) {
+          setDriverStatus(data.userState);
+        }
       } catch (error) {
         console.error("Failed to fetch user data", error);
+        setIsLoggedIn(false);
+        navigate("/login");
       }
     };
 
     fetchUserData();
-  }, []);
+  }, [navigate, setIsLoggedIn]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -94,6 +118,7 @@ const DashboardPage: React.FC = () => {
       }
 
       localStorage.removeItem("token");
+      setIsLoggedIn(false);
       navigate("/login");
     } catch (error) {
       console.error("Failed to logout", error);
@@ -141,6 +166,30 @@ const DashboardPage: React.FC = () => {
         return <AllRides />;
       default:
         return <Profile />;
+    }
+  };
+  const getStatusText = (status: DriverStatus) => {
+    switch (status) {
+      case DriverStatus.RequestCreated:
+        return "Request Processing";
+      case DriverStatus.RequestApproved:
+        return "Request Approved";
+      case DriverStatus.RequestRejected:
+        return "Request Rejected";
+      default:
+        return "No Status";
+    }
+  };
+  const getStatusColor = (status: DriverStatus) => {
+    switch (status) {
+      case DriverStatus.RequestCreated:
+        return "orange";
+      case DriverStatus.RequestApproved:
+        return "green";
+      case DriverStatus.RequestRejected:
+        return "red";
+      default:
+        return "gray";
     }
   };
 
@@ -218,6 +267,17 @@ const DashboardPage: React.FC = () => {
                 <button onClick={() => handleMenuClick("My Rides")}>
                   My Rides
                 </button>
+              </li>
+              <li>
+                <div
+                  className="driver-status"
+                  style={{
+                    background: getStatusColor(driverStatus),
+                    color: "black",
+                  }}
+                >
+                  {getStatusText(driverStatus)}
+                </div>
               </li>
             </>
           )}

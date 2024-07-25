@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./RegisterPage.css";
+import axios from "axios";
+import { GoogleLogin } from "react-google-login";
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -56,6 +58,21 @@ const RegisterPage: React.FC = () => {
     } catch (error) {
       console.error("Registration error", error);
       alert("Registration error");
+    }
+  };
+
+  const responseGoogle = async (response: any) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:8152/api/auth/google-response",
+        {
+          idToken: response.tokenId,
+        }
+      );
+      localStorage.setItem("token", res.data.token);
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Login failed", error);
     }
   };
 
@@ -171,6 +188,14 @@ const RegisterPage: React.FC = () => {
             />
           </div>
           <button type="submit">Register</button>
+          <GoogleLogin
+            clientId="225755120679-jju20trm8lpt2c53oo5f0oghe54o4lqe.apps.googleusercontent.com"
+            buttonText="Login with Google"
+            onSuccess={responseGoogle}
+            onFailure={(response) => console.error(response)}
+            prompt="select_account"
+            cookiePolicy={"single_host_origin"}
+          />
           <button type="button" onClick={() => navigate("/login")}>
             Already have an account? Log in
           </button>

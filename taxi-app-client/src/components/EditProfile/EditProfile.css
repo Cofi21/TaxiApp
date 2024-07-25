@@ -31,7 +31,7 @@
 .edit-profile-box .right-column {
   display: flex;
   flex-direction: column;
-  width: calc(40% - 20px); /* Adjusted to 50% to ensure proper spacing */
+  width: calc(40% - 20px); 
   margin-left: 70px;
 }
 

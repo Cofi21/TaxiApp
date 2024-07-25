@@ -1,16 +1,13 @@
 ﻿using Common.Enums;
 using Common.Helpers;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.IO;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using UserService.Database;
 using UserService.Models;
 
@@ -22,32 +19,14 @@ namespace UserService.Controllers
     {
         private readonly UserDbContext _userDbContext;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthController> _logger;
         private readonly string _imagesFolderPath = @"C:\Users\bogda\Documents\GitHub\TaxiApp\TaxiWebApp\Images";
 
-        public AuthController(UserDbContext userDbContext, IConfiguration configuration)
+        public AuthController(UserDbContext userDbContext, IConfiguration configuration, ILogger<AuthController> logger)
         {
             _userDbContext = userDbContext;
             _configuration = configuration;
-        }
-
-        [NonAction]
-        public async Task<string> SaveImage(IFormFile imageFile, string userId)
-        {
-            string extension = Path.GetExtension(imageFile.FileName);
-            string imageName = $"{userId}{extension}";
-            var imagePath = Path.Combine(_imagesFolderPath, imageName);
-
-            if (System.IO.File.Exists(imagePath))
-            {
-                System.IO.File.Delete(imagePath);
-            }
-
-            using (var fileStream = new FileStream(imagePath, FileMode.Create))
-            {
-                await imageFile.CopyToAsync(fileStream);
-            }
-
-            return imageName;
+            _logger = logger;
         }
 
         [HttpPost("login")]
@@ -58,10 +37,10 @@ namespace UserService.Controllers
             {
                 return Unauthorized(new { message = "Invalid email or password" });
             }
-            if (user.UserType == UserType.Driver && user.UserState == UserState.Created)
-            {
-                return Unauthorized(new { message = "You have to wait Admins Verify." });
-            }
+          //  if (user.UserType == UserType.Driver && user.UserState == UserState.Created)
+          //  {
+          //      return Unauthorized(new { message = "You have to wait Admins Verify." });
+           // }
             var token = GenerateJwtToken(user);
             return Ok(new { token });
         }
@@ -131,7 +110,49 @@ namespace UserService.Controllers
             return Ok(new { message = "Logout successful" });
         }
 
-       
+        [HttpGet("signin-google")]
+        public IActionResult SignInGoogle()
+        {
+            var redirectUrl = Url.Action("GoogleResponse", "Auth");
+            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        }
+
+        [HttpGet("google-response")]
+        public async Task<IActionResult> GoogleResponse()
+        {
+            var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            if (result.Succeeded)
+            {
+                var user = result.Principal;
+                var email = user.FindFirstValue(ClaimTypes.Email);
+                var name = user.FindFirstValue(ClaimTypes.Name);
+
+                var existingUser = _userDbContext.Users.SingleOrDefault(u => u.Email == email);
+                if (existingUser == null)
+                {
+                    var newUser = new User
+                    {
+                        Username = name,
+                        Email = email,
+                        UserType = UserType.User, // Default user type for Google sign-in
+                        UserState = UserState.Verified,
+                        CreatedAt = DateTime.UtcNow.AddHours(2),
+                        ImageName = ""
+                    };
+
+                    _userDbContext.Users.Add(newUser);
+                    await _userDbContext.SaveChangesAsync();
+                    var newToken = GenerateJwtToken(newUser);
+                    return Ok(new { newToken });
+                }
+
+                var token = GenerateJwtToken(existingUser);
+                return Ok(new { token });
+            }
+
+            return Unauthorized();
+        }
 
         private string GenerateJwtToken(User user)
         {
@@ -154,6 +175,26 @@ namespace UserService.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+
+        [NonAction]
+        public async Task<string> SaveImage(IFormFile imageFile, string userId)
+        {
+            string extension = Path.GetExtension(imageFile.FileName);
+            string imageName = $"{userId}{extension}";
+            var imagePath = Path.Combine(_imagesFolderPath, imageName);
+
+            if (System.IO.File.Exists(imagePath))
+            {
+                System.IO.File.Delete(imagePath);
+            }
+
+            using (var fileStream = new FileStream(imagePath, FileMode.Create))
+            {
+                await imageFile.CopyToAsync(fileStream);
+            }
+
+            return imageName;
         }
     }
 }

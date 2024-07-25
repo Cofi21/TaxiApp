@@ -102,7 +102,8 @@ namespace UserService.Controllers
                     u.DateOfBirth,
                     u.Address,
                     u.UserType,
-                    u.ImageName
+                    u.ImageName,
+                    u.UserState
                 })
                 .SingleOrDefault(u => u.Email == email);
 

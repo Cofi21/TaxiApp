@@ -10,19 +10,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace UserService
 {
-    /// <summary>
-    /// The FabricRuntime creates an instance of this class for each service type instance.
-    /// </summary>
     internal sealed class UserService : StatelessService
     {
         public UserService(StatelessServiceContext context)
             : base(context)
         { }
 
-        /// <summary>
-        /// Optional override to create listeners (like tcp, http) for this service instance.
-        /// </summary>
-        /// <returns>The collection of listeners.</returns>
         protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
         {
             return new ServiceInstanceListener[]
@@ -34,21 +27,20 @@ namespace UserService
 
                         var builder = WebApplication.CreateBuilder();
 
-                         builder.Services.AddDbContext<UserDbContext>(options =>
+                        builder.Services.AddDbContext<UserDbContext>(options =>
                             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 
                         builder.Services.AddSingleton<StatelessServiceContext>(serviceContext);
                         builder.WebHost
-                                    .UseKestrel()
-                                    .UseContentRoot(Directory.GetCurrentDirectory())
-                                    .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
-                                    .UseUrls(url);
+                                .UseKestrel()
+                                .UseContentRoot(Directory.GetCurrentDirectory())
+                                .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
+                                .UseUrls(url);
                         builder.Services.AddControllers();
                         builder.Services.AddEndpointsApiExplorer();
                         builder.Services.AddSwaggerGen();
 
-                         builder.Services.AddCors(options =>
+                        builder.Services.AddCors(options =>
                         {
                             options.AddPolicy("AllowSpecificOrigin",
                                 policy => policy
@@ -58,7 +50,7 @@ namespace UserService
                                     .AllowCredentials());
                         });
 
-                         // JWT Authentication
+                        // JWT Authentication
                         var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
                         builder.Services.AddAuthentication(options =>
                         {
@@ -78,22 +70,29 @@ namespace UserService
                                 ValidateAudience = true,
                                 ValidAudience = builder.Configuration["Jwt:Audience"]
                             };
+                        })
+                        .AddGoogle(options =>
+                        {
+                            options.ClientId = builder.Configuration["Google:ClientId"];
+                            options.ClientSecret = builder.Configuration["Google:ClientSecret"];
                         });
 
                         var app = builder.Build();
                         if (app.Environment.IsDevelopment())
                         {
-                        app.UseSwagger();
-                        app.UseSwaggerUI();
+                            app.UseSwagger();
+                            app.UseSwaggerUI();
                         }
-                        app.UseAuthorization();
-                        app.UseAuthentication();
-                        app.MapControllers();
 
                         app.UseCors("AllowSpecificOrigin");
+                        app.UseRouting();
+                        app.UseAuthentication();
+                        app.UseAuthorization();
+
+                        app.MapControllers();
+                        app.MapGet("/", () => "Hello World!");
 
                         return app;
-
                     }))
             };
         }

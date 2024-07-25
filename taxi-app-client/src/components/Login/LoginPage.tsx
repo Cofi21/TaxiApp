@@ -2,13 +2,22 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginPage.css";
 
-const LoginPage: React.FC = () => {
+interface LoginPageProps {
+  setIsLoggedIn: (isLoggedIn: boolean) => void;
+}
+
+const LoginPage: React.FC<{ setIsLoggedIn: (isLoggedIn: boolean) => void }> = ({
+  setIsLoggedIn,
+}) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
+    setError("");
+
     try {
       const response = await fetch("http://localhost:8152/api/Auth/login", {
         method: "POST",
@@ -20,16 +29,20 @@ const LoginPage: React.FC = () => {
           password: password,
         }),
       });
+      console.log(response);
 
       if (!response.ok) {
-        throw new Error("Login failed");
+        setError("Login failed. Please check your credentials.");
+        return;
       }
 
       const data = await response.json();
+      console.log("Received token:", data.token);
       localStorage.setItem("token", data.token);
-      navigate("/");
+      setIsLoggedIn(true);
     } catch (error) {
       console.error("Error logging in:", error);
+      setError("An error occurred. Please try again later.");
     }
   };
 
@@ -62,6 +75,7 @@ const LoginPage: React.FC = () => {
               required
             />
           </div>
+          {error && <p className="error">{error}</p>}{" "}
           <button type="submit">Login</button>
           <button type="button" onClick={handleRegister}>
             Create Account

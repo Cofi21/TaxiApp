@@ -18,6 +18,7 @@ const userTypeMap: { [key: number]: string } = {
   1: "Driver",
   2: "User",
 };
+
 const EditProfile: React.FC<{ userData: UserData }> = ({ userData }) => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
