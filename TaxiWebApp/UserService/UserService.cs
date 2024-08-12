@@ -27,6 +27,8 @@ namespace UserService
 
                         var builder = WebApplication.CreateBuilder();
 
+                        
+
                         builder.Services.AddDbContext<UserDbContext>(options =>
                             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 

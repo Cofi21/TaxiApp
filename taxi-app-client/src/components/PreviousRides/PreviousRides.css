@@ -1,0 +1,54 @@
+/* PreviousRides.css */
+
+.previous-rides-container {
+  margin: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.previous-rides-heading {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.loading-text,
+.error-text {
+  text-align: center;
+  font-size: 18px;
+}
+
+.no-rides-text {
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+}
+
+.rides-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 16px;
+}
+
+.rides-table th,
+.rides-table td {
+  border: 1px solid #ddd;
+  padding: 12px 15px;
+  text-align: center;
+}
+
+.rides-table th {
+  background-color: #e0e0e0;
+  font-weight: bold;
+  color: #333;
+}
+
+.rides-table td {
+  background-color: #6e6b6b;
+}
+
+.rides-table tr:nth-child(even) {
+}
+
+.rides-table tr:hover {
+}

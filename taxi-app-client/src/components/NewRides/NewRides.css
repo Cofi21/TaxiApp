@@ -1,0 +1,71 @@
+.new-rides-container {
+  font-family: Arial, sans-serif;
+  color: #333; /* Dark gray text color for better readability */
+  background-color: #f4f4f4; /* Light gray background for contrast */
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 800px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.new-rides-container h2 {
+  font-size: 1.4em;
+  margin-bottom: 20px;
+  color: #444; /* Slightly darker text color for the heading */
+  text-align: center;
+}
+
+.new-rides-container p {
+  font-size: 0.9em;
+  margin-bottom: 10px;
+}
+
+.new-rides-container ul {
+  list-style: none;
+  padding: 0;
+}
+
+.new-rides-container li {
+  background-color: #fff; /* White background for list items */
+  border: 1px solid #ddd; /* Light border for separation */
+  padding: 20px;
+  border-radius: 5px;
+  margin: 20px;
+  float: left;
+}
+
+.new-rides-container button {
+  color: #fff; /* White text color */
+  border: none;
+  padding: 10px 20px;
+  font-size: 1em;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.new-rides-container button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+.loading,
+.error {
+  font-size: 1.2em;
+  color: #d9534f; /* Red color for errors */
+  margin: 15px 0;
+}
+
+.error {
+  color: #d9534f; /* Red color for error messages */
+}
+.button-active {
+  background-color: #4caf50; /* Green */
+  color: white;
+}
+
+.button-disabled {
+  background-color: #f44336; /* Red */
+  color: white;
+  cursor: not-allowed;
+}

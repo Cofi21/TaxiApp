@@ -4,8 +4,11 @@ using System.Fabric;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Interfaces;
+using Common.RideDTO;
 using Microsoft.ServiceFabric.Data.Collections;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
+using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 
 namespace RideAssignmentService
@@ -13,11 +16,27 @@ namespace RideAssignmentService
     /// <summary>
     /// An instance of this class is created for each service replica by the Service Fabric runtime.
     /// </summary>
-    internal sealed class RideAssignmentService : StatefulService
+    internal sealed class RideAssignmentService : StatefulService, IRideAssignmentService
     {
         public RideAssignmentService(StatefulServiceContext context)
             : base(context)
         { }
+
+        public Task<DriveStatus> AssignRideAsync()
+        {
+            return Task.FromResult(DriveStatus.DriverCreatedOffer);
+        }
+
+
+        public Task<DriveStatus> AcceptRideAsync()
+        {
+            return Task.FromResult(DriveStatus.UserAceptedDrive); 
+        }
+
+        public Task<DriveStatus> DeclineRideAsync()
+        {
+            return Task.FromResult(DriveStatus.UserDeclinedDrive); 
+        }
 
         /// <summary>
         /// Optional override to create listeners (e.g., HTTP, Service Remoting, WCF, etc.) for this service replica to handle client or user requests.
@@ -28,7 +47,7 @@ namespace RideAssignmentService
         /// <returns>A collection of listeners.</returns>
         protected override IEnumerable<ServiceReplicaListener> CreateServiceReplicaListeners()
         {
-            return new ServiceReplicaListener[0];
+            return this.CreateServiceRemotingReplicaListeners();
         }
 
         /// <summary>

@@ -5,15 +5,15 @@ VisualStudioVersion = 17.9.34902.65
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "TaxiWebApp", "TaxiWebApp\TaxiWebApp.sfproj", "{C4CE3F74-4115-4FE9-863E-0952B4155B2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService", "UserService\UserService.csproj", "{543957F9-822D-41EA-A2E0-45E993BABC35}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserService", "UserService\UserService.csproj", "{543957F9-822D-41EA-A2E0-45E993BABC35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RideManagementService", "RideManagementService\RideManagementService.csproj", "{238D9085-3345-44C2-A58C-5E1A6F85AD55}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RideManagementService", "RideManagementService\RideManagementService.csproj", "{238D9085-3345-44C2-A58C-5E1A6F85AD55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "NotificationService\NotificationService.csproj", "{9B3F4781-F8F0-415B-AB2F-90A44A3462DB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotificationService", "NotificationService\NotificationService.csproj", "{9B3F4781-F8F0-415B-AB2F-90A44A3462DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RideAssignmentService", "RideAssignmentService\RideAssignmentService.csproj", "{E86E85E9-F14D-4FC3-BF46-5A02661998FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{518CADAD-BBC0-4C85-98E7-22CE0AB009F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{518CADAD-BBC0-4C85-98E7-22CE0AB009F2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RideAssignmentService", "RideAssignmentService\RideAssignmentService.csproj", "{A6795F24-5FC2-4732-9E58-0321912CD3C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,14 +59,6 @@ Global
 		{9B3F4781-F8F0-415B-AB2F-90A44A3462DB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9B3F4781-F8F0-415B-AB2F-90A44A3462DB}.Release|x64.ActiveCfg = Release|Any CPU
 		{9B3F4781-F8F0-415B-AB2F-90A44A3462DB}.Release|x64.Build.0 = Release|Any CPU
-		{E86E85E9-F14D-4FC3-BF46-5A02661998FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E86E85E9-F14D-4FC3-BF46-5A02661998FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E86E85E9-F14D-4FC3-BF46-5A02661998FE}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E86E85E9-F14D-4FC3-BF46-5A02661998FE}.Debug|x64.Build.0 = Debug|Any CPU
-		{E86E85E9-F14D-4FC3-BF46-5A02661998FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E86E85E9-F14D-4FC3-BF46-5A02661998FE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E86E85E9-F14D-4FC3-BF46-5A02661998FE}.Release|x64.ActiveCfg = Release|Any CPU
-		{E86E85E9-F14D-4FC3-BF46-5A02661998FE}.Release|x64.Build.0 = Release|Any CPU
 		{518CADAD-BBC0-4C85-98E7-22CE0AB009F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{518CADAD-BBC0-4C85-98E7-22CE0AB009F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{518CADAD-BBC0-4C85-98E7-22CE0AB009F2}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -75,6 +67,14 @@ Global
 		{518CADAD-BBC0-4C85-98E7-22CE0AB009F2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{518CADAD-BBC0-4C85-98E7-22CE0AB009F2}.Release|x64.ActiveCfg = Release|Any CPU
 		{518CADAD-BBC0-4C85-98E7-22CE0AB009F2}.Release|x64.Build.0 = Release|Any CPU
+		{A6795F24-5FC2-4732-9E58-0321912CD3C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6795F24-5FC2-4732-9E58-0321912CD3C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6795F24-5FC2-4732-9E58-0321912CD3C8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A6795F24-5FC2-4732-9E58-0321912CD3C8}.Debug|x64.Build.0 = Debug|Any CPU
+		{A6795F24-5FC2-4732-9E58-0321912CD3C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6795F24-5FC2-4732-9E58-0321912CD3C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6795F24-5FC2-4732-9E58-0321912CD3C8}.Release|x64.ActiveCfg = Release|Any CPU
+		{A6795F24-5FC2-4732-9E58-0321912CD3C8}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

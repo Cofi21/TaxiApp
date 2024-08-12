@@ -37,10 +37,6 @@ namespace UserService.Controllers
             {
                 return Unauthorized(new { message = "Invalid email or password" });
             }
-          //  if (user.UserType == UserType.Driver && user.UserState == UserState.Created)
-          //  {
-          //      return Unauthorized(new { message = "You have to wait Admins Verify." });
-           // }
             var token = GenerateJwtToken(user);
             return Ok(new { token });
         }

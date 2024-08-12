@@ -140,14 +140,18 @@
 }
 
 .profile-image {
-  width: 60px; 
+  width: 60px;
   height: 60px;
-  border-radius: 50%; 
-  margin-right: 10px; 
-  object-fit: cover; 
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
 }
 .driver-status {
   padding: 10px;
   font-weight: bold;
   border-radius: 5px;
+}
+.disabled-menu {
+  pointer-events: none;
+  opacity: 0.5;
 }

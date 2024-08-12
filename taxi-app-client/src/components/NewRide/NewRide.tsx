@@ -1,10 +1,21 @@
 import React from "react";
+import CreateRide from "../CreateRide/CreateRide";
 
-const NewRide: React.FC = () => {
+interface NewRideProps {
+  userUsername: string;
+  setIsMenuDisabled: (value: boolean) => void;
+}
+
+const NewRide: React.FC<NewRideProps> = ({
+  userUsername,
+  setIsMenuDisabled,
+}) => {
   return (
     <div>
-      <h2>New Ride</h2>
-      <p>This is the New Ride page.</p>
+      <CreateRide
+        userUsername={userUsername}
+        setIsMenuDisabled={setIsMenuDisabled}
+      />
     </div>
   );
 };

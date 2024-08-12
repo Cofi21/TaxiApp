@@ -41,6 +41,11 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ setIsLoggedIn }) => {
   const [driverStatus, setDriverStatus] = useState<DriverStatus>(
     DriverStatus.NoStatus
   );
+  const [isMenuDisabled, setIsMenuDisabled] = useState(false);
+
+  const menuClass = isMenuDisabled
+    ? "disabled-menu dashboard-menu"
+    : "dashboard-menu";
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -153,13 +158,18 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ setIsLoggedIn }) => {
       case "Profile":
         return <Profile />;
       case "New Ride":
-        return <NewRide />;
+        return (
+          <NewRide
+            userUsername={userName}
+            setIsMenuDisabled={setIsMenuDisabled}
+          />
+        );
       case "Previous Rides":
         return <PreviousRides />;
       case "Verification":
         return <Verification />;
       case "New Rides":
-        return <NewRides />;
+        return <NewRides  />;
       case "My Rides":
         return <MyRides />;
       case "All Rides":
@@ -196,7 +206,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ setIsLoggedIn }) => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <ul className="dashboard-menu">
+        <ul className={menuClass}>
           <li>
             <div className="profile-dropdown" ref={dropdownRef}>
               <div className="profile-info">
