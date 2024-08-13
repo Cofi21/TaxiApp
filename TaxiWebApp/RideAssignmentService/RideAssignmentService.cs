@@ -23,7 +23,7 @@ namespace RideAssignmentService
         { }
 
         public Task<DriveStatus> AssignRideAsync()
-        {
+        {    
             return Task.FromResult(DriveStatus.DriverCreatedOffer);
         }
 

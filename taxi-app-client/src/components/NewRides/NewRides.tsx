@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import "./NewRides.css"; 
+import "./NewRides.css";
+import CountdownDisplay from "../CountdownDisplay/CountdownDisplay";
 
 interface RideRequest {
   id: string;
@@ -19,6 +20,23 @@ interface Driver {
   userType: number;
   imageName: string;
   userState: number;
+}
+interface RideOffer {
+  id: string;
+  userId: string;
+  userUsername: string;
+  driverId: string;
+  driverUsername: string;
+  aproximatedTime: number;
+  aproximatedCost: number;
+  createdAt: Date;
+  startingAddress: string;
+  endingAddress: string;
+  isDeleted: string;
+  driveStatus: number;
+}
+interface NewRidesProps {
+  setIsMenuDisabled: (value: boolean) => void;
 }
 
 const VERIFIED_USER_STATE = 1; // Update this value based on your actual verification status
@@ -44,12 +62,16 @@ const getStatusLabel = (status: number): string => {
   }
 };
 
-const NewRides: React.FC = () => {
+const NewRides: React.FC<NewRidesProps> = ({ setIsMenuDisabled }) => {
   const [rideRequests, setRideRequests] = useState<RideRequest[]>([]);
   const [driver, setDriver] = useState("");
   const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [drivePhase, setDrivePhase] = useState(0);
+  const [aproximatedTime, setAproximatedTime] = useState(0);
+  const [doFetchDrive, setDoFetchDrive] = useState(true);
+  const [showCountdown, setShowCountdown] = useState(false);
 
   useEffect(() => {
     const fetchCurrentDriver = async () => {
@@ -108,6 +130,50 @@ const NewRides: React.FC = () => {
     fetchRideRequests();
   }, []);
 
+  useEffect(() => {
+    if (doFetchDrive) {
+      const fetchDrive = async () => {
+        try {
+          const response = await fetch(
+            "http://localhost:9035/api/Drive/current-driver-drive",
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              (await response.json()).message || "An error occurred"
+            );
+          }
+
+          const data: RideOffer = await response.json();
+          if (data.driveStatus === 2) {
+            setDrivePhase(data.driveStatus);
+            setShowCountdown(true);
+            setDoFetchDrive(false);
+            setAproximatedTime(data.aproximatedTime);
+            return;
+          }
+        } catch (err: any) {
+          console.log("error");
+        }
+      };
+
+      // Fetch the drive status every 500ms
+      const intervalId = setInterval(fetchDrive, 500);
+
+      // Clean up the interval when the component is unmounted
+      return () => clearInterval(intervalId);
+    }
+  }, []);
+
+  const handleDriveEnd = async () => {
+    setDoFetchDrive(true);
+  };
+
   const handleAcceptRide = async (rideId: string) => {
     try {
       if (!isVerified) {
@@ -145,6 +211,9 @@ const NewRides: React.FC = () => {
       console.error(error);
     }
   };
+  const handleCountdownComplete = async () => {
+    setShowCountdown(false);
+  };
 
   if (loading) {
     return <p className="loading">Loading...</p>;
@@ -153,10 +222,21 @@ const NewRides: React.FC = () => {
   if (error) {
     return <p className="error">{error}</p>;
   }
-
+  console.log("aprox time " + aproximatedTime);
   return (
     <div className="new-rides-container">
       <h2>New Rides</h2>
+      {showCountdown && (
+        <CountdownDisplay
+          initialPhase={1}
+          waitingDuration={aproximatedTime}
+          progressDuration={10}
+          onCountdownComplete={handleCountdownComplete}
+          onDriveStart={() => {}}
+          onDriveEnd={handleDriveEnd}
+          setIsMenuDisabled={setIsMenuDisabled}
+        />
+      )}
       {rideRequests.length === 0 ? (
         <p>No new ride requests available.</p>
       ) : (

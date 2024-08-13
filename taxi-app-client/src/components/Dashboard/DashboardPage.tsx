@@ -169,7 +169,11 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ setIsLoggedIn }) => {
       case "Verification":
         return <Verification />;
       case "New Rides":
-        return <NewRides  />;
+        return (
+          <NewRides
+            setIsMenuDisabled={setIsMenuDisabled}
+          />
+        );
       case "My Rides":
         return <MyRides />;
       case "All Rides":

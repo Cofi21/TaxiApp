@@ -318,7 +318,6 @@ namespace RideManagementService.Controllers
                 new Uri("fabric:/TaxiWebApp/RideAssignmentService"),
                 partition
             );
-            Console.WriteLine($"Proces pokrenut: {statefulProxy}");
             var result = await statefulProxy.AcceptRideAsync();
 
              drive.DriveStatus = result;
@@ -489,7 +488,7 @@ namespace RideManagementService.Controllers
 
             // Get the current active drive for the user
             var currentUserDrive = await _context.Drives
-                                                 .Where(d => d.DriverId == driverId && !d.IsDeleted && d.DriveStatus != DriveStatus.DriveCompleted && d.DriveStatus != DriveStatus.UserDeclinedDrive)
+                                                 .Where(d => d.DriverId == driverId && !d.IsDeleted && (d.DriveStatus == DriveStatus.UserAceptedDrive || d.DriveStatus == DriveStatus.DriveActive ))
                                                  .FirstOrDefaultAsync();
 
             if (currentUserDrive == null)
