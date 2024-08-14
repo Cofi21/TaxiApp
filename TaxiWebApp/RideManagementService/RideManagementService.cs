@@ -31,9 +31,6 @@ namespace RideManagementService
 
                         var builder = WebApplication.CreateBuilder();
 
-
-
-
                         builder.Services.AddDbContext<DriveDbContext>(options =>
                             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 

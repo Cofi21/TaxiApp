@@ -49,7 +49,8 @@ namespace UserService
                                     .WithOrigins("http://localhost:5173")
                                     .AllowAnyHeader()
                                     .AllowAnyMethod()
-                                    .AllowCredentials());
+                                    .AllowCredentials()
+                                    .SetIsOriginAllowed((host) => true));
                         });
 
                         // JWT Authentication

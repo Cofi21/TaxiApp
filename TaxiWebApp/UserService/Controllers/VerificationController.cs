@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using UserService.Database;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.Models;
+using Microsoft.ServiceFabric.Services.Remoting.Client;
+using Common.Interfaces;
 
 namespace UserService.Controllers
 {
@@ -34,7 +37,7 @@ namespace UserService.Controllers
         }
 
         [HttpPost("approve/{email}")]
-        public IActionResult ApproveVerification(string email)
+        public  IActionResult ApproveVerification(string email)
         {
             var user = _userDbContext.Users.SingleOrDefault(u => u.Email == email);
             if (user == null)
@@ -45,6 +48,22 @@ namespace UserService.Controllers
             user.UserState = UserState.Verified;
             _userDbContext.Users.Update(user);
             _userDbContext.SaveChanges();
+
+            EmailInfo emailInfo = new EmailInfo()
+            {
+                Username = user.Username,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Id = user.Id,
+                UserType = user.UserType.ToString()
+            };
+
+            var emailServiceProxy = ServiceProxy.Create<INotificationService>(
+            new Uri("fabric:/TaxiWebApp/NotificationService")
+           );
+
+            var emailSent =  emailServiceProxy.DriverVerificationEmail(emailInfo);
 
             return Ok(new { message = "User approved" });
         }
@@ -61,6 +80,22 @@ namespace UserService.Controllers
             user.UserState = UserState.Rejected;
             _userDbContext.Users.Update(user);
             _userDbContext.SaveChanges();
+
+            EmailInfo emailInfo = new EmailInfo()
+            {
+                Username = user.Username,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Id = user.Id,
+                UserType = user.UserType.ToString()
+            };
+
+            var emailServiceProxy = ServiceProxy.Create<INotificationService>(
+            new Uri("fabric:/TaxiWebApp/NotificationService")
+           );
+
+            var emailSent = emailServiceProxy.DriverRejectionEmail(emailInfo);
 
             return Ok(new { message = "User rejected" });
         }

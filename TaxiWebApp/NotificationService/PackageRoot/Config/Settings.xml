@@ -6,4 +6,13 @@
     <Parameter Name="MyParameter" Value="Value1" />
   </Section>
   -->
+
+	<Section Name="NotificationServiceSettings">
+		<Parameter Name="SmtpServer" Value="smtp.gmail.com" />
+		<Parameter Name="Port" Value="587" />
+		<Parameter Name="SmtpUsername" Value="forumdrs2023@gmail.com" />
+		<Parameter Name="SmtpPassword" Value="wtez cskt ddtm uqbx" />
+		<Parameter Name="FromEmail" Value="forumdrs2023@gmail.com" />
+	</Section>
+	
 </Settings>

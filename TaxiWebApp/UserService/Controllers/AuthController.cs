@@ -1,10 +1,14 @@
 ﻿using Common.Enums;
 using Common.Helpers;
+using Common.Interfaces;
+using Common.Models;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.ServiceFabric.Services.Remoting.Client;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -95,6 +99,23 @@ namespace UserService.Controllers
             _userDbContext.Users.Update(user);
             _userDbContext.SaveChanges();
 
+
+            EmailInfo emailInfo = new EmailInfo()
+            {
+                Username = user.Username,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                UserType = user.UserType.ToString(),
+                Id = user.Id
+            };
+
+            var emailServiceProxy = ServiceProxy.Create<INotificationService>(
+                new Uri("fabric:/TaxiWebApp/NotificationService")
+            );
+
+            var emailSent = await emailServiceProxy.UserRegistrationEmail(emailInfo);
+
             var token = GenerateJwtToken(user);
 
             return Ok(new { token });
@@ -106,49 +127,60 @@ namespace UserService.Controllers
             return Ok(new { message = "Logout successful" });
         }
 
-        [HttpGet("signin-google")]
-        public IActionResult SignInGoogle()
+        [HttpPost("google-response")]
+        public async Task<IActionResult> GoogleResponse([FromBody] string idToken)
         {
-            var redirectUrl = Url.Action("GoogleResponse", "Auth");
-            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
-            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
-        }
+            var payload = await ValidateGoogleToken(idToken);
 
-        [HttpGet("google-response")]
-        public async Task<IActionResult> GoogleResponse()
-        {
-            var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            if (result.Succeeded)
+            if (payload == null)
             {
-                var user = result.Principal;
-                var email = user.FindFirstValue(ClaimTypes.Email);
-                var name = user.FindFirstValue(ClaimTypes.Name);
-
-                var existingUser = _userDbContext.Users.SingleOrDefault(u => u.Email == email);
-                if (existingUser == null)
-                {
-                    var newUser = new User
-                    {
-                        Username = name,
-                        Email = email,
-                        UserType = UserType.User, // Default user type for Google sign-in
-                        UserState = UserState.Verified,
-                        CreatedAt = DateTime.UtcNow.AddHours(2),
-                        ImageName = ""
-                    };
-
-                    _userDbContext.Users.Add(newUser);
-                    await _userDbContext.SaveChangesAsync();
-                    var newToken = GenerateJwtToken(newUser);
-                    return Ok(new { newToken });
-                }
-
-                var token = GenerateJwtToken(existingUser);
-                return Ok(new { token });
+                return Unauthorized();
             }
 
-            return Unauthorized();
+            var email = payload.Email;
+            var name = payload.Name;
+
+            var existingUser = _userDbContext.Users.SingleOrDefault(u => u.Email == email);
+            if (existingUser == null)
+            {
+                var newUser = new User
+                {
+                    Username = name,
+                    Email = email,
+                    UserType = UserType.User, // Default user type for Google sign-in
+                    UserState = UserState.Verified,
+                    CreatedAt = DateTime.UtcNow.AddHours(2),
+                    ImageName = "" // Ovaj deo trebaš prilagoditi po potrebi
+                };
+
+                _userDbContext.Users.Add(newUser);
+                await _userDbContext.SaveChangesAsync();
+                var newToken = GenerateJwtToken(newUser);
+                return Ok(new { token = newToken });
+            }
+
+            var token = GenerateJwtToken(existingUser);
+            return Ok(new { token });
         }
+
+        private async Task<GoogleJsonWebSignature.Payload> ValidateGoogleToken(string idToken)
+        {
+            var settings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new List<string> { "225755120679-jju20trm8lpt2c53oo5f0oghe54o4lqe.apps.googleusercontent.com" }
+            };
+
+            try
+            {
+                var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+                return payload;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
 
         private string GenerateJwtToken(User user)
         {
