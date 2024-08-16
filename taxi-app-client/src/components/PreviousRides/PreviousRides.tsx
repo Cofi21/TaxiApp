@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import './PreviousRides.css'; // Make sure this path is correct
+import "./PreviousRides.css"; // Make sure this path is correct
 
 interface Drive {
   id: string;
@@ -36,7 +36,9 @@ const PreviousRides: React.FC = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await fetch(
-          "http://localhost:9035/api/Drive/user-drives/",
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_URL_DRIVE_API
+          }/user-drives/`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

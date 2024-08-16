@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Common.Models;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
 using Common.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace UserService.Controllers
 {
@@ -111,5 +112,57 @@ namespace UserService.Controllers
 
             return Ok(new { userState = user.UserState });
         }
+
+        [HttpPost("block-driver/{driverId}")]
+        public async Task<IActionResult> BlockDriver(Guid driverId)
+        {
+            try
+            {
+                var driver = await _userDbContext.Users.FindAsync(driverId);
+                if (driver == null)
+                {
+                    return NotFound("Driver not found.");
+                }
+
+                driver.UserState = UserState.Blocked;
+
+                _userDbContext.Users.Update(driver);
+                await _userDbContext.SaveChangesAsync();
+
+                return Ok(driver.UserState);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, "Internal server error");
+            }
+        }
+        [HttpPost("unblock-driver/{driverId}")]
+        public async Task<IActionResult> UnblockDriver(Guid driverId)
+        {
+            try
+            {
+                var driver = await _userDbContext.Users.FindAsync(driverId);
+                if (driver == null)
+                {
+                    return NotFound("Driver not found.");
+                }
+
+                driver.UserState = UserState.Verified;
+
+                _userDbContext.Users.Update(driver);
+                await _userDbContext.SaveChangesAsync();
+
+                return Ok(driver.UserState);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+
+
     }
 }

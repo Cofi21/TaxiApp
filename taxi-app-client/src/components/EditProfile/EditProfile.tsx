@@ -37,12 +37,15 @@ const EditProfile: React.FC<{ userData: UserData }> = ({ userData }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch("http://localhost:8152/api/User/me", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL_USER_API}/me`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();
@@ -53,9 +56,6 @@ const EditProfile: React.FC<{ userData: UserData }> = ({ userData }) => {
           setDob(data.dateOfBirth.split("T")[0]);
           setAddress(data.address);
           setUserType(userTypeMap[data.userType]);
-          // setImagePreview(
-          //    `http://localhost:8152/api/User/get-image/${data.imageName}`
-          //  );
         } else {
           console.error("Failed to fetch user data");
         }
@@ -103,7 +103,7 @@ const EditProfile: React.FC<{ userData: UserData }> = ({ userData }) => {
 
     try {
       const response = await fetch(
-        "http://localhost:8152/api/User/edit-profile",
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL_USER_API}/edit-profile`,
         {
           method: "PUT",
           headers: {

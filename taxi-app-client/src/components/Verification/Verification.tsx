@@ -9,7 +9,7 @@ const Verification: React.FC = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await fetch(
-          "http://localhost:8152/api/Verification/requests",
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL_VERIFICATON_API}/requests`,
           {
             method: "GET",
             headers: {
@@ -36,13 +36,18 @@ const Verification: React.FC = () => {
   const handleApproval = async (email: string) => {
     try {
       const token = localStorage.getItem("token");
-      await fetch(`http://localhost:8152/api/Verification/approve/${email}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await fetch(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_URL_VERIFICATION_API
+        }/approve/${email}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       setVerificationRequests((prev) =>
         prev.filter((user) => user.email !== email)
@@ -55,13 +60,18 @@ const Verification: React.FC = () => {
   const handleRejection = async (email: string) => {
     try {
       const token = localStorage.getItem("token");
-      await fetch(`http://localhost:8152/api/Verification/reject/${email}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await fetch(
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_URL_VERIFICATION_API
+        }/reject/${email}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       setVerificationRequests((prev) =>
         prev.filter((user) => user.email !== email)

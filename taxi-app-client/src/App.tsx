@@ -8,13 +8,6 @@ const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(
     !!localStorage.getItem("token")
   );
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      navigate("/dashboard");
-    }
-  }, [isLoggedIn, navigate]);
 
   return (
     <Routes>
@@ -22,26 +15,11 @@ const App: React.FC = () => {
         path="/login"
         element={<LoginPage setIsLoggedIn={setIsLoggedIn} />}
       />
+      <Route path="/" element={<LoginPage setIsLoggedIn={setIsLoggedIn} />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/dashboard"
-        element={
-          isLoggedIn ? (
-            <DashboardPage setIsLoggedIn={setIsLoggedIn} />
-          ) : (
-            <LoginPage setIsLoggedIn={setIsLoggedIn} />
-          )
-        }
-      />
-      <Route
-        path="*"
-        element={
-          isLoggedIn ? (
-            <DashboardPage setIsLoggedIn={setIsLoggedIn} />
-          ) : (
-            <LoginPage setIsLoggedIn={setIsLoggedIn} />
-          )
-        }
+        element={<DashboardPage setIsLoggedIn={setIsLoggedIn} />}
       />
     </Routes>
   );

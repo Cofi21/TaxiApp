@@ -72,18 +72,22 @@ const NewRides: React.FC<NewRidesProps> = ({ setIsMenuDisabled }) => {
   const [aproximatedTime, setAproximatedTime] = useState(0);
   const [doFetchDrive, setDoFetchDrive] = useState(true);
   const [showCountdown, setShowCountdown] = useState(false);
+  const [driverId, setDriverId] = useState("");
 
   useEffect(() => {
     const fetchCurrentDriver = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:8152/api/User/me", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL_USER_API}/me`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch current driver");
@@ -102,7 +106,9 @@ const NewRides: React.FC<NewRidesProps> = ({ setIsMenuDisabled }) => {
       try {
         const token = localStorage.getItem("token");
         const response = await fetch(
-          "http://localhost:9035/api/Drive/new-driver-drives",
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_URL_DRIVE_API
+          }/new-driver-drives`,
           {
             method: "GET",
             headers: {
@@ -135,7 +141,9 @@ const NewRides: React.FC<NewRidesProps> = ({ setIsMenuDisabled }) => {
       const fetchDrive = async () => {
         try {
           const response = await fetch(
-            "http://localhost:9035/api/Drive/current-driver-drive",
+            `${
+              import.meta.env.VITE_REACT_APP_BACKEND_URL_DRIVE_API
+            }/current-driver-drive`,
             {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -155,11 +163,10 @@ const NewRides: React.FC<NewRidesProps> = ({ setIsMenuDisabled }) => {
             setShowCountdown(true);
             setDoFetchDrive(false);
             setAproximatedTime(data.aproximatedTime);
+            setDriverId(data.driverId);
             return;
           }
-        } catch (err: any) {
-          console.log("error");
-        }
+        } catch (err: any) {}
       };
 
       // Fetch the drive status every 500ms
@@ -184,7 +191,9 @@ const NewRides: React.FC<NewRidesProps> = ({ setIsMenuDisabled }) => {
       const driverUsername = driver;
 
       const response = await fetch(
-        `http://localhost:9035/api/Drive/create-offer/${rideId}`,
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_URL_DRIVE_API
+        }/create-offer/${rideId}`,
         {
           method: "POST",
           headers: {
@@ -206,7 +215,6 @@ const NewRides: React.FC<NewRidesProps> = ({ setIsMenuDisabled }) => {
       setRideRequests((prevRequests) =>
         prevRequests.filter((ride) => ride.id !== rideId)
       );
-      console.log("Offer created");
     } catch (error) {
       console.error(error);
     }
@@ -222,7 +230,6 @@ const NewRides: React.FC<NewRidesProps> = ({ setIsMenuDisabled }) => {
   if (error) {
     return <p className="error">{error}</p>;
   }
-  console.log("aprox time " + aproximatedTime);
   return (
     <div className="new-rides-container">
       <h2>New Rides</h2>

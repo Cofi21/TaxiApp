@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import RideOfferDisplay from "../RideOffer/RideOfferDisplay";
 import CountdownDisplay from "../CountdownDisplay/CountdownDisplay";
+import DriverRating from "../DriverRating/DriverRating";
 import "./CreateRide.css";
 
 interface CreateRideProps {
@@ -32,14 +33,18 @@ const CreateRide: React.FC<CreateRideProps> = ({
   const [endingAddress, setEndingAddress] = useState("");
   const [rideOffer, setRideOffer] = useState<RideOffer | null>(null);
   const [showCountdown, setShowCountdown] = useState(false);
+  const [showDriverRating, setShowDriverRating] = useState(false); // Changed to false initially
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [showRideOffer, setShowRideOffer] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchRideOffer = async () => {
       try {
         const response = await fetch(
-          "http://localhost:9035/api/Drive/current-user-drive",
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_URL_DRIVE_API
+          }/current-user-drive`,
           {
             method: "GET",
             headers: {
@@ -69,7 +74,7 @@ const CreateRide: React.FC<CreateRideProps> = ({
       return;
     }
 
-    setFormError(null); // Clear previous form errors
+    setFormError(null);
 
     const createDriveDto = {
       startingAddress,
@@ -82,7 +87,9 @@ const CreateRide: React.FC<CreateRideProps> = ({
       if (!token) throw new Error("No token found, please log in.");
 
       const response = await axios.post(
-        "http://localhost:9035/api/Drive/create-drive",
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_URL_DRIVE_API
+        }/create-drive`,
         createDriveDto,
         {
           headers: {
@@ -95,6 +102,7 @@ const CreateRide: React.FC<CreateRideProps> = ({
       if (response.status === 201) {
         const rideOfferData: RideOffer = response.data;
         setRideOffer(rideOfferData);
+        setShowRideOffer(true);
         localStorage.setItem("rideOffer", JSON.stringify(rideOfferData));
       }
     } catch (error) {
@@ -108,7 +116,9 @@ const CreateRide: React.FC<CreateRideProps> = ({
       try {
         const token = localStorage.getItem("token");
         const response = await axios.post(
-          `http://localhost:9035/api/Drive/accept-drive/${rideOffer.id}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_URL_DRIVE_API
+          }/accept-drive/${rideOffer.id}`,
           {},
           {
             headers: {
@@ -119,6 +129,7 @@ const CreateRide: React.FC<CreateRideProps> = ({
         );
 
         if (response.status === 200) {
+          setShowRideOffer(false);
           setShowCountdown(true);
         } else {
           console.error("Failed to accept offer");
@@ -135,7 +146,9 @@ const CreateRide: React.FC<CreateRideProps> = ({
       try {
         const token = localStorage.getItem("token");
         const response = await axios.post(
-          `http://localhost:9035/api/Drive/decline-drive/${rideOffer.id}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_URL_DRIVE_API
+          }/decline-drive/${rideOffer.id}`,
           {},
           {
             headers: {
@@ -147,6 +160,7 @@ const CreateRide: React.FC<CreateRideProps> = ({
 
         if (response.status === 200) {
           setRideOffer(null);
+          setShowRideOffer(false);
           localStorage.removeItem("rideOffer");
         } else {
           console.error("Failed to decline offer");
@@ -163,7 +177,9 @@ const CreateRide: React.FC<CreateRideProps> = ({
       try {
         const token = localStorage.getItem("token");
         await axios.post(
-          `http://localhost:9035/api/Drive/drive-arrived/${rideOffer.id}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_URL_DRIVE_API
+          }/drive-arrived/${rideOffer.id}`,
           {},
           {
             headers: {
@@ -183,7 +199,9 @@ const CreateRide: React.FC<CreateRideProps> = ({
       try {
         const token = localStorage.getItem("token");
         await axios.post(
-          `http://localhost:9035/api/Drive/drive-completed/${rideOffer.id}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_URL_DRIVE_API
+          }/drive-completed/${rideOffer.id}`,
           {},
           {
             headers: {
@@ -200,13 +218,16 @@ const CreateRide: React.FC<CreateRideProps> = ({
 
   const handleCountdownComplete = async () => {
     setShowCountdown(false);
-    setRideOffer(null);
-    localStorage.removeItem("rideOffer");
+    setShowRideOffer(false);
+    setShowDriverRating(true);
+    //setRideOffer(null);
+    //localStorage.removeItem("rideOffer");
   };
 
   useEffect(() => {
     if (rideOffer) {
       setShowCountdown(false); // Ensure countdown is not shown if a ride offer is present
+      setShowRideOffer(true);
     }
   }, [rideOffer]);
 
@@ -214,6 +235,7 @@ const CreateRide: React.FC<CreateRideProps> = ({
     <div className="create-ride-container">
       {!rideOffer ? (
         <>
+          {/* Form za kreiranje nove vožnje */}
           <h2>Create a New Ride</h2>
           <label>
             Starting Address:
@@ -245,11 +267,19 @@ const CreateRide: React.FC<CreateRideProps> = ({
           onDriveEnd={handleDriveEnd}
           setIsMenuDisabled={setIsMenuDisabled}
         />
-      ) : (
+      ) : showRideOffer ? (
         <RideOfferDisplay
           rideOffer={rideOffer}
           onAccept={handleOfferAccepted}
           onDecline={handleOfferDeclined}
+        />
+      ) : (
+        <DriverRating
+          driveId={rideOffer.id}
+          onClose={() => {
+            setShowDriverRating(false);
+            setRideOffer(null); // Clear the ride offer after rating
+          }}
         />
       )}
     </div>

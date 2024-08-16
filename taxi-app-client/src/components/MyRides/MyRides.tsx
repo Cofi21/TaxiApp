@@ -36,7 +36,9 @@ const PreviousRides: React.FC = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await fetch(
-          "http://localhost:9035/api/Drive/all-driver-drives/",
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_URL_DRIVE_API
+          }/all-driver-drives/`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

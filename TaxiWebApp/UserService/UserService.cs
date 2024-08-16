@@ -6,10 +6,26 @@ using Microsoft.EntityFrameworkCore;
 using System.Text;
 using UserService.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.IdentityModel.Tokens;
+using Google.Apis.Auth;
 
 namespace UserService
 {
+    public static class GoogleTokenValidator
+    {
+        public static async Task<GoogleJsonWebSignature.Payload> ValidateAsync(string token, string googleClientId)
+        {
+            var settings = new GoogleJsonWebSignature.ValidationSettings()
+            {
+                Audience = new[] { googleClientId }
+            };
+
+            var payload = await GoogleJsonWebSignature.ValidateAsync(token, settings);
+            return payload;
+        }
+    }
+
     internal sealed class UserService : StatelessService
     {
         public UserService(StatelessServiceContext context)
@@ -42,16 +58,18 @@ namespace UserService
                         builder.Services.AddEndpointsApiExplorer();
                         builder.Services.AddSwaggerGen();
 
-                        builder.Services.AddCors(options =>
-                        {
-                            options.AddPolicy("AllowSpecificOrigin",
-                                policy => policy
-                                    .WithOrigins("http://localhost:5173")
-                                    .AllowAnyHeader()
-                                    .AllowAnyMethod()
-                                    .AllowCredentials()
-                                    .SetIsOriginAllowed((host) => true));
-                        });
+                       builder.Services.AddCors(options =>
+                       {
+                           options.AddPolicy("AllowSpecificOrigin",
+                               policy => policy
+                                   .WithOrigins("http://localhost:5173")
+                                   .AllowAnyHeader()
+                                   .AllowAnyMethod()
+                                   .AllowCredentials()
+                                   .SetIsOriginAllowedToAllowWildcardSubdomains()
+                                   .SetPreflightMaxAge(TimeSpan.FromMinutes(10)));
+                       });
+
 
                         // JWT Authentication
                         var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
@@ -74,6 +92,11 @@ namespace UserService
                                 ValidAudience = builder.Configuration["Jwt:Audience"]
                             };
                         })
+                        .AddFacebook(options =>
+                        {
+                            options.ClientId = builder.Configuration["Google:ClientId"];
+                            options.ClientSecret = builder.Configuration["Google:ClientSecret"];
+                        })
                         .AddGoogle(options =>
                         {
                             options.ClientId = builder.Configuration["Google:ClientId"];
@@ -88,7 +111,17 @@ namespace UserService
                         }
 
                         app.UseCors("AllowSpecificOrigin");
+
+                        app.Use(async (context, next) =>
+                        {
+                            context.Response.Headers.Add("Cross-Origin-Opener-Policy", "same-origin");
+                            context.Response.Headers.Add("Cross-Origin-Embedder-Policy", "require-corp");
+                            await next();
+                        });
+
                         app.UseRouting();
+                        app.UseHttpsRedirection();
+                        app.UseStaticFiles();
                         app.UseAuthentication();
                         app.UseAuthorization();
 

@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./RegisterPage.css";
 import axios from "axios";
-import { GoogleLogin } from "react-google-login";
+import {
+  GoogleOAuthProvider,
+  GoogleLogin,
+  CredentialResponse,
+} from "@react-oauth/google";
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -40,10 +44,13 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8152/api/Auth/register", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL_AUTH_API}/register`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -54,25 +61,33 @@ const RegisterPage: React.FC = () => {
 
       const data = await response.json();
       localStorage.setItem("token", data.token);
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Registration error", error);
       alert("Registration error");
     }
   };
+  const handleGoogleLogin = async (response: CredentialResponse) => {
+    if (response.credential) {
+      try {
+        const res = await axios.post(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL_AUTH_API}/google-login`,
+          { token: response.credential },
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+        console.log("google response data" + res);
+        const { token, imagePath } = res.data;
+        localStorage.setItem("token", token);
 
-  const responseGoogle = async (response: any) => {
-    try {
-      const res = await axios.post(
-        "http://localhost:8152/api/auth/google-response",
-        {
-          idToken: response.tokenId,
-        }
-      );
-      localStorage.setItem("token", res.data.token);
-      window.location.href = "/dashboard";
-    } catch (error) {
-      console.error("Login failed", error);
+        // Optionally, save the image path to local storage or context
+        localStorage.setItem("userImage", imagePath);
+        console.log(`Token: ${token} ImagePath ${imagePath}`);
+        navigate("/dashboard");
+      } catch (error) {
+        console.error("Error during Google login:", error);
+      }
     }
   };
 
@@ -188,14 +203,14 @@ const RegisterPage: React.FC = () => {
             />
           </div>
           <button type="submit">Register</button>
-          <GoogleLogin
-            clientId="225755120679-jju20trm8lpt2c53oo5f0oghe54o4lqe.apps.googleusercontent.com"
-            buttonText="Login with Google"
-            onSuccess={responseGoogle}
-            onFailure={(response) => console.error(response)}
-            prompt="select_account"
-            cookiePolicy={"single_host_origin"}
-          />
+          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+            <GoogleLogin
+              onSuccess={handleGoogleLogin}
+              onError={() => {
+                console.error("Error with Google OAuth");
+              }}
+            />
+          </GoogleOAuthProvider>
           <button type="button" onClick={() => navigate("/login")}>
             Already have an account? Log in
           </button>

@@ -19,7 +19,8 @@ enum DriverStatus {
   RequestCreated = 0,
   RequestApproved = 1,
   RequestRejected = 2,
-  NoStatus = 3,
+  Blocked = 3,
+  NoStatus = 4,
 }
 
 interface DashboardPageProps {
@@ -51,18 +52,22 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ setIsLoggedIn }) => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem("token");
+        console.log(`TOken ${token}`);
         if (!token) {
           navigate("/login");
           return;
         }
 
-        const response = await fetch("http://localhost:8152/api/User/me", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL_USER_API}/me`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -75,9 +80,10 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ setIsLoggedIn }) => {
         setUserRole(data.userType);
         setUserData(data);
 
-        const imageUrl = `http://localhost:8152/api/User/get-image/${data.imageName}`;
+        const imageUrl = `${
+          import.meta.env.VITE_REACT_APP_BACKEND_URL_USER_API
+        }/get-image/${data.imageName}`;
         setUserImage(imageUrl);
-        console.log("data " + data.userState);
 
         if (data.userType === UserRole.Driver) {
           setDriverStatus(data.userState);
@@ -113,13 +119,16 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ setIsLoggedIn }) => {
       const token = localStorage.getItem("token");
 
       if (token) {
-        await fetch("http://localhost:8152/api/Auth/logout", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        await fetch(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_URL_AUTH_API}/logout`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
       }
 
       localStorage.removeItem("token");
@@ -169,11 +178,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ setIsLoggedIn }) => {
       case "Verification":
         return <Verification />;
       case "New Rides":
-        return (
-          <NewRides
-            setIsMenuDisabled={setIsMenuDisabled}
-          />
-        );
+        return <NewRides setIsMenuDisabled={setIsMenuDisabled} />;
       case "My Rides":
         return <MyRides />;
       case "All Rides":
@@ -190,6 +195,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ setIsLoggedIn }) => {
         return "Request Approved";
       case DriverStatus.RequestRejected:
         return "Request Rejected";
+      case DriverStatus.Blocked:
+        return "Driver Blocked";
       default:
         return "No Status";
     }
@@ -219,8 +226,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ setIsLoggedIn }) => {
                   alt="User"
                   className="profile-image"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      "http://localhost:8152/api/User/get-image/default-profile.png";
+                    (e.target as HTMLImageElement).src = `${
+                      import.meta.env.VITE_REACT_APP_BACKEND_URL_USER_API
+                    }/get-image/default-profile.png`;
                   }}
                 />
                 <button

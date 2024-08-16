@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./LoginPage.css";
 
 interface LoginPageProps {
@@ -13,33 +14,36 @@ const LoginPage: React.FC<{ setIsLoggedIn: (isLoggedIn: boolean) => void }> = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
+  const token = localStorage.getItem("token");
+  console.log(token);
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8152/api/Auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      });
-      console.log(response);
-
+      const response = await fetch(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL_AUTH_API}/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+          }),
+        }
+      );
       if (!response.ok) {
         setError("Login failed. Please check your credentials.");
         return;
       }
 
       const data = await response.json();
-      console.log("Received token:", data.token);
+
       localStorage.setItem("token", data.token);
       setIsLoggedIn(true);
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error logging in:", error);
       setError("An error occurred. Please try again later.");

@@ -17,5 +17,6 @@ namespace UserService.Database
         public UserState UserState { get; set; }
         public UserType UserType { get; set; }
         public string ImageName { get; set; }
+        public bool IsBlocked { get;set; }
     }
 }

@@ -127,60 +127,98 @@ namespace UserService.Controllers
             return Ok(new { message = "Logout successful" });
         }
 
-        [HttpPost("google-response")]
-        public async Task<IActionResult> GoogleResponse([FromBody] string idToken)
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLogin googleLoginDto)
         {
-            var payload = await ValidateGoogleToken(idToken);
+            string token = googleLoginDto.Token;
+            Console.WriteLine($"Received token: {token}");
 
-            if (payload == null)
-            {
-                return Unauthorized();
-            }
-
-            var email = payload.Email;
-            var name = payload.Name;
-
-            var existingUser = _userDbContext.Users.SingleOrDefault(u => u.Email == email);
-            if (existingUser == null)
-            {
-                var newUser = new User
-                {
-                    Username = name,
-                    Email = email,
-                    UserType = UserType.User, // Default user type for Google sign-in
-                    UserState = UserState.Verified,
-                    CreatedAt = DateTime.UtcNow.AddHours(2),
-                    ImageName = "" // Ovaj deo trebaš prilagoditi po potrebi
-                };
-
-                _userDbContext.Users.Add(newUser);
-                await _userDbContext.SaveChangesAsync();
-                var newToken = GenerateJwtToken(newUser);
-                return Ok(new { token = newToken });
-            }
-
-            var token = GenerateJwtToken(existingUser);
-            return Ok(new { token });
-        }
-
-        private async Task<GoogleJsonWebSignature.Payload> ValidateGoogleToken(string idToken)
-        {
-            var settings = new GoogleJsonWebSignature.ValidationSettings
-            {
-                Audience = new List<string> { "225755120679-jju20trm8lpt2c53oo5f0oghe54o4lqe.apps.googleusercontent.com" }
-            };
+            var googleClientId = _configuration["Google:ClientId"];
+            GoogleJsonWebSignature.Payload payload;
 
             try
             {
-                var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
-                return payload;
+                payload = await GoogleTokenValidator.ValidateAsync(token, googleClientId);
             }
-            catch
+            catch (InvalidJwtException)
             {
-                return null;
+                return BadRequest("Invalid Google token");
             }
-        }
 
+            var hashedPassword = HashHelper.HashPassword(payload.GivenName + payload.FamilyName);
+            var state = payload.EmailVerified;
+            UserState userState = UserState.Created;
+            if (state)
+            {
+                userState = UserState.Verified;
+            }
+
+            var user = _userDbContext.Users.SingleOrDefault(u => u.Email == payload.Email);
+
+            if (user == null)
+            {
+                user = new User()
+                {
+                    Email = payload.Email,
+                    FirstName = payload.GivenName,
+                    LastName = payload.FamilyName,
+                    UserState = userState,
+                    Username = payload.Name,
+                    UserType = UserType.User,
+                    CreatedAt = DateTime.Now,
+                    Address = "",
+                    IsDeleted = false,
+                    PasswordHash = hashedPassword,
+                    ImageName = ""
+                };
+
+                _userDbContext.Users.Add(user);
+                _userDbContext.SaveChanges();
+
+                var defaultImage = @"C:\Users\bogda\Documents\GitHub\TaxiApp\TaxiWebApp\Images\profile-picture.png";
+                using (var imageStream = new FileStream(defaultImage, FileMode.Open, FileAccess.Read))
+                {
+                    var formFile = new FormFile(imageStream, 0, imageStream.Length, null, Path.GetFileName(defaultImage))
+                    {
+                        Headers = new HeaderDictionary(),
+                        ContentType = "image/png"
+                    };
+
+                    var image = await SaveImage(formFile, user.Id.ToString());
+                    user.ImageName = image;
+                }
+
+                _userDbContext.Users.Update(user);
+                _userDbContext.SaveChanges();
+            }
+
+            _userDbContext.Users.Update(user);
+            _userDbContext.SaveChanges();
+
+            EmailInfo emailInfo = new EmailInfo()
+            {
+                Username = user.Username,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                UserType = user.UserType.ToString(),
+                Id = user.Id
+            };
+
+            var emailServiceProxy = ServiceProxy.Create<INotificationService>(
+                new Uri("fabric:/TaxiWebApp/NotificationService")
+            );
+
+            var emailSent = await emailServiceProxy.UserRegistrationEmail(emailInfo);
+
+            var jwt = GenerateJwtToken(user);
+
+            return Ok(new
+            {
+                token = jwt,
+                imagePath = user.ImageName
+            });
+        }
 
         private string GenerateJwtToken(User user)
         {
