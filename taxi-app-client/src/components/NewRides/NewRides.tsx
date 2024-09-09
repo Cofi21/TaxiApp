@@ -237,11 +237,12 @@ const NewRides: React.FC<NewRidesProps> = ({ setIsMenuDisabled }) => {
         <CountdownDisplay
           initialPhase={1}
           waitingDuration={aproximatedTime}
-          progressDuration={10}
+          progressDuration={20}
           onCountdownComplete={handleCountdownComplete}
           onDriveStart={() => {}}
           onDriveEnd={handleDriveEnd}
           setIsMenuDisabled={setIsMenuDisabled}
+          username={driver}
         />
       )}
       {rideRequests.length === 0 ? (

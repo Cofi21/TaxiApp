@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Fabric;
 using System.IO;
 using System.Text;
+using RideManagementService.Hubs;
 
 namespace RideManagementService
 {
@@ -44,6 +45,8 @@ namespace RideManagementService
                         builder.Services.AddEndpointsApiExplorer();
                         builder.Services.AddSwaggerGen();
 
+                        builder.Services.AddSignalR();
+
                         builder.Services.AddCors(options =>
                         {
                             options.AddPolicy("AllowSpecificOrigin",
@@ -66,6 +69,10 @@ namespace RideManagementService
                         app.UseRouting();
                         app.UseAuthentication();
                         app.UseAuthorization();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapHub<ChatHub>("/chatHub"); // Mapira vašu ChatHub klasu
+                       });
 
                         app.MapControllers();
                         app.MapGet("/", () => "Hello World!");

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import * as signalR from "@microsoft/signalr";
 
 interface CountdownDisplayProps {
   initialPhase: number; // 1: Waiting for Drive, 2: Drive in Progress
@@ -8,6 +9,7 @@ interface CountdownDisplayProps {
   onDriveStart: () => void;
   onDriveEnd: () => void;
   setIsMenuDisabled: (value: boolean) => void;
+  username: string; // Pass logged-in username to identify the sender
 }
 
 const CountdownDisplay: React.FC<CountdownDisplayProps> = ({
@@ -18,12 +20,18 @@ const CountdownDisplay: React.FC<CountdownDisplayProps> = ({
   onDriveStart,
   onDriveEnd,
   setIsMenuDisabled,
+  username,
 }) => {
   const [phase, setPhase] = useState<number>(initialPhase);
   const [seconds, setSeconds] = useState<number>(
     initialPhase === 1 ? waitingDuration : progressDuration
   );
   const [countdownActive, setCountdownActive] = useState(false);
+  const [connection, setConnection] = useState<signalR.HubConnection | null>(
+    null
+  );
+  const [messages, setMessages] = useState<string[]>([]);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (seconds > 0) {
@@ -37,9 +45,9 @@ const CountdownDisplay: React.FC<CountdownDisplayProps> = ({
       if (phase === 1) {
         setPhase(2);
         setSeconds(progressDuration);
-        onDriveStart(); // Call when drive starts
+        onDriveStart();
       } else if (phase === 2) {
-        onDriveEnd(); // Call when drive ends
+        onDriveEnd();
         onCountdownComplete();
         setCountdownActive(false);
       }
@@ -52,11 +60,12 @@ const CountdownDisplay: React.FC<CountdownDisplayProps> = ({
     onDriveStart,
     onDriveEnd,
   ]);
+
   useEffect(() => {
     if (seconds === 0 && phase === 2) {
-      setIsMenuDisabled(false); // Omogući meni kada se odbrojavanje završi
+      setIsMenuDisabled(false);
     } else {
-      setIsMenuDisabled(countdownActive); // Onemogući meni dok je countdown aktivan
+      setIsMenuDisabled(countdownActive);
     }
   }, [countdownActive, seconds, phase, setIsMenuDisabled]);
 
@@ -68,6 +77,49 @@ const CountdownDisplay: React.FC<CountdownDisplayProps> = ({
     }
   }, [countdownActive]);
 
+  useEffect(() => {
+    const newConnection = new signalR.HubConnectionBuilder()
+      .withUrl(`${import.meta.env.VITE_REACT_APP_BACKEND_URL_CHAT_API}`) // URL to your SignalR hub    IZMENI OVO================================================
+      .withAutomaticReconnect()
+      .build();
+
+    setConnection(newConnection);
+
+    return () => {
+      if (connection) {
+        connection.stop();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (connection) {
+      connection
+        .start()
+        .then(() => {
+          console.log("Connected to SignalR Hub");
+
+          connection.on(
+            "ReceiveMessage",
+            (user: string, receivedMessage: string) => {
+              setMessages((prevMessages) => [
+                ...prevMessages,
+                `${user}: ${receivedMessage}`,
+              ]);
+            }
+          );
+        })
+        .catch((error) => console.error("Connection failed: ", error));
+    }
+  }, [connection]);
+
+  const sendMessage = async () => {
+    if (connection && message) {
+      await connection.invoke("SendMessage", username, message);
+      setMessage("");
+    }
+  };
+
   const getDisplayText = () => {
     if (phase === 1) return "Waiting for Drive";
     if (phase === 2) return "Drive in Progress";
@@ -76,6 +128,7 @@ const CountdownDisplay: React.FC<CountdownDisplayProps> = ({
 
   return (
     <div
+      className="overlay-div"
       style={{
         position: "fixed",
         top: 0,
@@ -85,13 +138,36 @@ const CountdownDisplay: React.FC<CountdownDisplayProps> = ({
         backgroundColor: "rgba(0, 0, 0, 0.7)",
         color: "white",
         display: "flex",
+        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
         zIndex: 1000,
-        fontSize: "2rem",
       }}
     >
-      <div>{`${getDisplayText()}: ${seconds}s`}</div>
+      <div>
+        <h1>{`${getDisplayText()}: ${seconds}s`}</h1>
+      </div>
+      <div className="chat-container">
+        <div className="message-box">
+          {messages.map((msg, index) => (
+            <div key={index} className="message">
+              {msg}
+            </div>
+          ))}
+        </div>
+        <div className="input-container">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className="message-input"
+            placeholder="Type a message..."
+          />
+          <button onClick={sendMessage} className="send-button">
+            Send
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

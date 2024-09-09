@@ -1,0 +1,68 @@
+.chat-container {
+  margin-top: 20px;
+  width: 80%;
+  max-width: 500px; /* Increased the max width for larger message display */
+  border-color: #ddd;
+  border-radius: 5px;
+  font-size: 20px;
+  border: solid 2px;
+}
+.overlay-div .chat-container .message-box .message {
+  font-size: 20px;
+}
+.overlay-div .chat-container .message-box {
+  font-size: 20px;
+}
+.message-box {
+  height: 400px; /* Increased height for a bigger message display area */
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #2c2c2c; /* Background color for message area */
+  border-radius: 5px;
+  font-size: 20px;
+}
+
+.message-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+.message-box::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 4px;
+}
+
+.message {
+  font-size: 20px; /* Reduced font size for messages */
+  color: #ccc; /* Light gray color for better readability */
+  margin-bottom: 5px;
+}
+
+.input-container {
+  display: flex;
+  gap: 10px;
+}
+
+.message-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #1e1e1e;
+  color: white;
+}
+
+.send-button {
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.send-button:hover {
+  background-color: #45a049;
+}

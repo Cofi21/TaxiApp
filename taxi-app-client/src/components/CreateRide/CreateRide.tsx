@@ -87,9 +87,7 @@ const CreateRide: React.FC<CreateRideProps> = ({
       if (!token) throw new Error("No token found, please log in.");
 
       const response = await axios.post(
-        `${
-          import.meta.env.VITE_REACT_APP_BACKEND_URL_DRIVE_API
-        }/create-drive`,
+        `${import.meta.env.VITE_REACT_APP_BACKEND_URL_DRIVE_API}/create-drive`,
         createDriveDto,
         {
           headers: {
@@ -261,11 +259,12 @@ const CreateRide: React.FC<CreateRideProps> = ({
         <CountdownDisplay
           initialPhase={1}
           waitingDuration={rideOffer.aproximatedTime}
-          progressDuration={10}
+          progressDuration={20}
           onCountdownComplete={handleCountdownComplete}
           onDriveStart={handleDriveStart}
           onDriveEnd={handleDriveEnd}
           setIsMenuDisabled={setIsMenuDisabled}
+          username={userUsername}
         />
       ) : showRideOffer ? (
         <RideOfferDisplay
