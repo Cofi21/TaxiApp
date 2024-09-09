@@ -8,6 +8,14 @@ const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(
     !!localStorage.getItem("token")
   );
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect to dashboard if the user is logged in
+    if (isLoggedIn) {
+      navigate("/dashboard");
+    }
+  }, [isLoggedIn, navigate]);
 
   return (
     <Routes>
